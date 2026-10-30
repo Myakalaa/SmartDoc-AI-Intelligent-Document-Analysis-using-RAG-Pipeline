@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — DocAnalysis</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 44px 40px;
+      width: 420px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .logo-icon {
+      font-size: 38px;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .logo h1 {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo p {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+    }
+    input {
+      width: 100%;
+      padding: 13px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input::placeholder { color: rgba(255,255,255,0.3); }
+    input:focus {
+      border-color: #7c3aed;
+      background: rgba(124,58,237,0.15);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 6px;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .footer-link {
+      text-align: center;
+      margin-top: 22px;
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+    }
+    .footer-link a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer-link a:hover { color: #c4b5fd; }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .alert.success {
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.4);
+      color: #6ee7b7;
+      display: block;
+    }
+    .alert.error {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      display: block;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <span class="logo-icon">🧠</span>
+    <h1>DocAnalysis AI</h1>
+    <p>Create your account</p>
+  </div>
+
+  <div id="alert" class="alert"></div>
+
+  <form id="registerForm">
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="e.g. amyak" required autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label>Mobile Number</label>
+      <input type="text" id="mobile" placeholder="e.g. 9999999999"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Min. 6 characters" required/>
+    </div>
+    <button type="submit" class="btn" id="submitBtn">Create Account</button>
+  </form>
+
+  <div class="footer-link">
+    Already have an account? <a href="login.html">Sign In</a>
+  </div>
+</div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById("submitBtn");
+    const alert = document.getElementById("alert");
+
+    const username = document.getElementById("username").value.trim();
+    const mobile   = document.getElementById("mobile").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) return;
+
+    btn.disabled   = true;
+    btn.innerHTML  = '<span class="spinner"></span>Creating account...';
+    alert.className = "alert";
+    alert.style.display = "none";
+
+    try {
+      const res = await fetch(`${API}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, mobile_number: mobile || null, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert.className = "alert success";
+        alert.textContent = `✅ Account created for "${data.username}"! Redirecting to login...`;
+        setTimeout(() => window.location.href = "login.html", 1800);
+      } else {
+        alert.className = "alert error";
+        alert.textContent = `❌ ${data.detail || "Registration failed"}`;
+        btn.disabled  = false;
+        btn.innerHTML = "Create Account";
+      }
+    } catch (err) {
+      alert.className = "alert error";
+      alert.textContent = "❌ Cannot connect to server. Is the API running?";
+      btn.disabled  = false;
+      btn.innerHTML = "Create Account";
+    }
+  });
+</script>
+</body>
+</html>

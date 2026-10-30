@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home — DocAnalysis AI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #fff;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 0 32px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 700; color: #fff;
+    }
+    .nav-brand span { font-size: 24px; }
+    .nav-right {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 13px; color: #c4b5fd;
+    }
+    .nav-user .dot { color: #10b981; font-size: 10px; }
+    .btn-logout {
+      padding: 7px 16px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5; border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover {
+      background: rgba(239,68,68,0.3);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .panel-title {
+      font-size: 15px; font-weight: 700;
+      color: #e2e8f0; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title .badge {
+      background: rgba(124,58,237,0.25);
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 6px; padding: 2px 8px;
+      font-size: 11px; color: #a78bfa;
+    }
+
+    /* UPLOAD PANEL — full width */
+    .panel.full { grid-column: 1 / -1; }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: #fff; font-size: 14px;
+      line-height: 1.6; resize: vertical; outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    textarea::placeholder { color: rgba(255,255,255,0.3); }
+    textarea:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+    }
+
+    .btn-primary {
+      margin-top: 14px;
+      padding: 13px 28px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; display: inline-flex;
+      align-items: center; gap: 8px;
+    }
+    .btn-primary:hover   { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* RESULT CARD */
+    .result-card {
+      display: none;
+      margin-top: 20px;
+      background: rgba(16,185,129,0.07);
+      border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .result-card.show { display: block; }
+
+    .result-row {
+      margin-bottom: 14px;
+    }
+    .result-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+      text-transform: uppercase; color: #a78bfa; margin-bottom: 5px;
+    }
+    .result-value {
+      font-size: 14px; color: #e2e8f0; line-height: 1.6;
+    }
+
+    /* tags */
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: rgba(124,58,237,0.25);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 20px; padding: 3px 11px;
+      font-size: 12px; color: #c4b5fd;
+    }
+    .tag.green {
+      background: rgba(16,185,129,0.15);
+      border-color: rgba(16,185,129,0.35);
+      color: #6ee7b7;
+    }
+    .tag.blue {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.35);
+      color: #93c5fd;
+    }
+    .tag.orange {
+      background: rgba(245,158,11,0.15);
+      border-color: rgba(245,158,11,0.35);
+      color: #fcd34d;
+    }
+
+    /* sentiment badge */
+    .sentiment-badge {
+      display: inline-block; padding: 4px 14px;
+      border-radius: 20px; font-size: 13px; font-weight: 600;
+    }
+    .sentiment-badge.Positive { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); }
+    .sentiment-badge.Negative { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+    .sentiment-badge.Neutral  { background: rgba(148,163,184,0.2); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.4); }
+
+    /* ── HISTORY TABLE ── */
+    .history-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr { border-bottom: 1px solid rgba(255,255,255,0.1); }
+    th {
+      text-align: left; padding: 8px 10px;
+      color: rgba(255,255,255,0.4); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+    td { padding: 10px 10px; color: #cbd5e1; }
+    td:first-child { color: #fff; font-weight: 500; }
+    .no-data {
+      text-align: center; padding: 32px;
+      color: rgba(255,255,255,0.3); font-size: 13px;
+    }
+    .delete-btn {
+      padding: 4px 10px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #f87171; border-radius: 6px;
+      cursor: pointer; font-size: 12px; transition: all 0.2s;
+    }
+    .delete-btn:hover { background: rgba(239,68,68,0.25); }
+
+    /* ── RAG QUERY PANEL ── */
+    .rag-row {
+      display: flex; gap: 10px; margin-top: 0;
+    }
+    .rag-row input {
+      flex: 1; padding: 12px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; color: #fff; font-size: 14px;
+      outline: none; transition: all 0.2s;
+    }
+    .rag-row input::placeholder { color: rgba(255,255,255,0.3); }
+    .rag-row input:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+    }
+    .btn-rag {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      white-space: nowrap; transition: all 0.2s;
+    }
+    .btn-rag:hover   { opacity: 0.9; }
+    .btn-rag:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .rag-answer {
+      display: none; margin-top: 16px;
+      background: rgba(79,70,229,0.1);
+      border: 1px solid rgba(79,70,229,0.3);
+      border-radius: 10px; padding: 16px;
+    }
+    .rag-answer.show { display: block; }
+    .rag-answer-text {
+      font-size: 14px; color: #e2e8f0; line-height: 1.7;
+    }
+    .rag-sources {
+      margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .source-chip {
+      background: rgba(79,70,229,0.2);
+      border: 1px solid rgba(79,70,229,0.4);
+      border-radius: 20px; padding: 3px 11px;
+      font-size: 11px; color: #a5b4fc;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      grid-column: 1 / -1;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 20px 24px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon { font-size: 28px; }
+    .stat-label { color: rgba(255,255,255,0.4); font-size: 12px; }
+    .stat-value { font-size: 22px; font-weight: 700; color: #fff; }
+
+    /* Alert */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 13px 20px; border-radius: 10px;
+      font-size: 13px; font-weight: 500; z-index: 999;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success {
+      background: rgba(16,185,129,0.9); color: #fff;
+      box-shadow: 0 8px 20px rgba(16,185,129,0.4);
+    }
+    .toast.error {
+      background: rgba(239,68,68,0.9); color: #fff;
+      box-shadow: 0 8px 20px rgba(239,68,68,0.4);
+    }
+
+    /* spinner */
+    .spinner {
+      display: inline-block; width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 720px) {
+      .container { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-brand">
+    <span>🧠</span> DocAnalysis AI
+  </div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <span class="dot">●</span>
+      <span id="navUser">...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <span class="stat-icon">📄</span>
+      <div>
+        <div class="stat-label">Total Documents</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">⚡</span>
+      <div>
+        <div class="stat-label">FAISS Indexed</div>
+        <div class="stat-value" id="statIndexed">—</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🤖</span>
+      <div>
+        <div class="stat-label">AI Model</div>
+        <div class="stat-value" style="font-size:14px;margin-top:4px;">Gemini Flash</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD & ANALYZE (full width) -->
+  <div class="panel full">
+    <div class="panel-title">
+      📤 Analyze Document <span class="badge">POST /documents</span>
+    </div>
+
+    <textarea id="docText" placeholder="Paste any document text here — Invoice, Contract, Report, Resume, Letter...&#10;&#10;Example: Invoice #1234 from Acme Corp dated 2024-01-15. Total amount: $5,000. Due in 30 days."></textarea>
+
+    <button class="btn-primary" id="analyzeBtn" onclick="analyzeDoc()">
+      <span>🔍</span> Analyze Document
+    </button>
+
+    <!-- RESULT -->
+    <div class="result-card" id="resultCard">
+      <div class="result-row">
+        <div class="result-label">📝 Summary</div>
+        <div class="result-value" id="rSummary"></div>
+      </div>
+      <div class="result-row">
+        <div class="result-label">📌 Key Points</div>
+        <div class="tags" id="rKeyPoints"></div>
+      </div>
+      <div style="display:flex; gap:32px; flex-wrap:wrap;">
+        <div class="result-row">
+          <div class="result-label">🗂️ Document Type</div>
+          <div class="result-value" id="rType"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">💬 Sentiment</div>
+          <div id="rSentiment"></div>
+        </div>
+      </div>
+      <div class="result-row">
+        <div class="result-label">🏷️ Entities</div>
+        <div class="tags" id="rEntities"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TABLE -->
+  <div class="panel" style="grid-column: 1 / -1;">
+    <div class="panel-title">
+      🗄️ Document History
+      <span class="badge">MySQL → REST API</span>
+      <button onclick="loadHistory()" style="margin-left:auto; background:rgba(124,58,237,0.2); border:1px solid rgba(124,58,237,0.4); color:#a78bfa; border-radius:6px; padding:4px 12px; font-size:12px; cursor:pointer;">↻ Refresh</button>
+    </div>
+    <div class="history-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Summary</th>
+            <th>Sentiment</th>
+            <th>Created At</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="6" class="no-data">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RAG QUERY -->
+  <div class="panel full">
+    <div class="panel-title">
+      🔍 Ask AI About Your Documents <span class="badge">RAG + FAISS</span>
+    </div>
+    <div class="rag-row">
+      <input type="text" id="ragQuery" placeholder="e.g. What is the total amount due? / Who are the parties in the contract?" />
+      <button class="btn-rag" id="ragBtn" onclick="askRAG()">Ask →</button>
+    </div>
+    <div class="rag-answer" id="ragAnswer">
+      <div class="result-label" style="margin-bottom:8px;">🤖 AI Answer</div>
+      <div class="rag-answer-text" id="ragAnswerText"></div>
+      <div class="rag-sources" id="ragSources"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+
+  // ── Auth guard ──────────────────────────────────────────────────────────────
+  const token    = localStorage.getItem("access_token");
+  const username = localStorage.getItem("username") || "User";
+
+  if (!token) window.location.href = "login.html";
+
+  document.getElementById("navUser").textContent = username;
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "login.html";
+  }
+
+  function authHeader() {
+    return { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" };
+  }
+
+  // ── Toast ───────────────────────────────────────────────────────────────────
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.textContent  = msg;
+    t.className    = `toast ${type} show`;
+    setTimeout(() => t.classList.remove("show"), 3000);
+  }
+
+  // ── Stats ───────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res  = await fetch(`${API}/`, { headers: authHeader() });
+      const data = await res.json();
+      document.getElementById("statIndexed").textContent =
+        data.indexed_documents ?? "—";
+    } catch {}
+  }
+
+  // ── History ─────────────────────────────────────────────────────────────────
+  async function loadHistory() {
+    const body = document.getElementById("historyBody");
+    body.innerHTML = `<tr><td colspan="6" class="no-data">Loading...</td></tr>`;
+
+    try {
+      const res  = await fetch(`${API}/documents`, { headers: authHeader() });
+      const docs = await res.json();
+
+      document.getElementById("statTotal").textContent = docs.length;
+
+      if (!docs.length) {
+        body.innerHTML = `<tr><td colspan="6" class="no-data">No documents yet. Upload one above!</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = docs.map(d => `
+        <tr onclick="showDoc(${d.id})">
+          <td>#${d.id}</td>
+          <td><span class="tag">${d.document_type || "—"}</span></td>
+          <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${d.summary || "—"}
+          </td>
+          <td><span class="sentiment-badge ${d.sentiment}">${d.sentiment || "—"}</span></td>
+          <td style="color:rgba(255,255,255,0.4); font-size:12px;">
+            ${new Date(d.created_at).toLocaleString()}
+          </td>
+          <td>
+            <button class="delete-btn" onclick="event.stopPropagation(); deleteDoc(${d.id})">
+              🗑 Delete
+            </button>
+          </td>
+        </tr>
+      `).join("");
+
+    } catch (err) {
+      body.innerHTML = `<tr><td colspan="6" class="no-data">❌ Failed to load. Is the API running?</td></tr>`;
+    }
+  }
+
+  // ── Show single doc result in result card ───────────────────────────────────
+  async function showDoc(id) {
+    try {
+      const res = await fetch(`${API}/documents/${id}`, { headers: authHeader() });
+      const d   = await res.json();
+      renderResult(d);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {}
+  }
+
+  // ── Analyze document ────────────────────────────────────────────────────────
+  async function analyzeDoc() {
+    const text = document.getElementById("docText").value.trim();
+    if (!text) { showToast("Please enter document text", "error"); return; }
+
+    const btn = document.getElementById("analyzeBtn");
+    btn.disabled   = true;
+    btn.innerHTML  = '<span class="spinner"></span> Analyzing...';
+
+    try {
+      const res  = await fetch(`${API}/documents`, {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        renderResult(data);
+        showToast("✅ Document analyzed and saved!");
+        loadHistory();
+        loadStats();
+        document.getElementById("docText").value = "";
+      } else {
+        showToast(`❌ ${data.detail || "Analysis failed"}`, "error");
+      }
+    } catch {
+      showToast("❌ Server error. Is the API running?", "error");
+    }
+
+    btn.disabled  = false;
+    btn.innerHTML = '<span>🔍</span> Analyze Document';
+  }
+
+  function renderResult(d) {
+    document.getElementById("rSummary").textContent = d.summary || "—";
+
+    const kp = document.getElementById("rKeyPoints");
+    kp.innerHTML = (d.key_points || []).map(p =>
+      `<span class="tag">${p}</span>`).join("") || "—";
+
+    document.getElementById("rType").textContent = d.document_type || "—";
+
+    const sent = document.getElementById("rSentiment");
+    sent.innerHTML = `<span class="sentiment-badge ${d.sentiment}">${d.sentiment || "—"}</span>`;
+
+    const entities = d.entities || {};
+    const allTags  = [
+      ...(entities.names   || []).map(n => `<span class="tag green">👤 ${n}</span>`),
+      ...(entities.dates   || []).map(n => `<span class="tag blue">📅 ${n}</span>`),
+      ...(entities.amounts || []).map(n => `<span class="tag orange">💰 ${n}</span>`),
+    ];
+    document.getElementById("rEntities").innerHTML = allTags.join("") || "—";
+
+    document.getElementById("resultCard").classList.add("show");
+  }
+
+  // ── Delete ──────────────────────────────────────────────────────────────────
+  async function deleteDoc(id) {
+    if (!confirm(`Delete document #${id}?`)) return;
+    try {
+      const res = await fetch(`${API}/documents/${id}`, {
+        method: "DELETE", headers: authHeader()
+      });
+      if (res.status === 204) {
+        showToast(`✅ Document #${id} deleted`);
+        loadHistory(); loadStats();
+      } else {
+        showToast("❌ Delete failed", "error");
+      }
+    } catch { showToast("❌ Server error", "error"); }
+  }
+
+  // ── RAG Query ───────────────────────────────────────────────────────────────
+  async function askRAG() {
+    const query = document.getElementById("ragQuery").value.trim();
+    if (!query) { showToast("Enter a question first", "error"); return; }
+
+    const btn  = document.getElementById("ragBtn");
+    btn.disabled   = true;
+    btn.textContent = "...";
+
+    const answerDiv = document.getElementById("ragAnswer");
+    answerDiv.classList.remove("show");
+
+    try {
+      const res  = await fetch(`${API}/documents/query`, {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify({ query, top_k: 3 })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById("ragAnswerText").textContent = data.answer;
+        const srcDiv = document.getElementById("ragSources");
+        srcDiv.innerHTML = (data.sources || []).map(s =>
+          `<span class="source-chip">📄 Doc #${s.doc_id} · ${s.document_type} · ${s.score}</span>`
+        ).join("");
+        answerDiv.classList.add("show");
+      } else {
+        showToast(`❌ ${data.detail}`, "error");
+      }
+    } catch { showToast("❌ RAG query failed", "error"); }
+
+    btn.disabled   = false;
+    btn.textContent = "Ask →";
+  }
+
+  // Allow Enter key in RAG input
+  document.getElementById("ragQuery").addEventListener("keydown", e => {
+    if (e.key === "Enter") askRAG();
+  });
+
+  // ── Init ────────────────────────────────────────────────────────────────────
+  loadHistory();
+  loadStats();
+</script>
+</body>
+</html>
